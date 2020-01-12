@@ -1,4 +1,4 @@
-package ro.anud.anud;
+package ro.anud.markovchain;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,14 +20,23 @@ public class MarkovChainTest {
                 .limit(iterations)
                 .forEach(integer -> {
                     var markovChain = new MarkovChain<Float>(random);
-                    markovChain.addChoice(0.1, new MarkovChain<Float>().setValue(0.1F));
-                    markovChain.addChoice(0.2, new MarkovChain<Float>().setValue(0.2F));
-                    markovChain.addChoice(0.3, new MarkovChain<Float>().setValue(0.3F));
-                    markovChain.addChoice(0.4, new MarkovChain<Float>().setValue(0.4F));
+                    markovChain.addChoice(0.1, () -> new MarkovChain<Float>().setValue(0.1F));
+                    markovChain.addChoice(0.2, () -> new MarkovChain<Float>().setValue(0.2F));
+                    markovChain.addChoice(0.3, () -> new MarkovChain<Float>().setValue(0.3F));
+                    markovChain.addChoice(0.4, () -> new MarkovChain<Float>().setValue(0.4F));
 
                     var aFloat = markovChain.getChoice().getValue();
                     result.put(aFloat, result.getOrDefault(aFloat, 0) + 1);
                 });
+
+        result.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByKey())
+                .forEach(floatIntegerEntry -> {
+                    System.out.println(floatIntegerEntry.getKey() + ": " + (floatIntegerEntry.getValue() / (iterations + 0D)));
+                });
+
+
         BiFunction<Double, Double, Boolean> epsilonEqual = (Double first, Double second) -> {
             return Math.abs((first - second)) < 0.001;
         };
@@ -39,11 +48,5 @@ public class MarkovChainTest {
         Assert.assertTrue(epsilonEqual.apply(result.get(0.3F) / (iterations + 0D), 0.1D));
         Assert.assertTrue(epsilonEqual.apply(result.get(0.4F) / (iterations + 0D), 0.7D));
 
-        result.entrySet()
-                .stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(floatIntegerEntry -> {
-                    System.out.println(floatIntegerEntry.getKey() + ": " + (floatIntegerEntry.getValue() / (iterations + 0D)));
-                });
     }
 }

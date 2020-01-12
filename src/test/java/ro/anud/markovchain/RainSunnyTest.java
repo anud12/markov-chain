@@ -1,4 +1,4 @@
-package ro.anud.anud;
+package ro.anud.markovchain;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -19,13 +19,13 @@ public class RainSunnyTest {
         var sunnyChain = new MarkovChain<>(random);
 
         rainChain.setValue("R")
-                .addChoice(0.9, rainChain)
-                .addChoice(0.1, sunnyChain);
+                .addChoice(0.9, () -> rainChain)
+                .addChoice(0.1, () -> sunnyChain);
 
 
         sunnyChain.setValue("S")
-                .addChoice(0.9, sunnyChain)
-                .addChoice(0.1, rainChain);
+                .addChoice(0.9, () -> sunnyChain)
+                .addChoice(0.1, () -> rainChain);
 
         var iterations = 1000000;
         var currentChain = new AtomicReference<MarkovChain>(rainChain);
@@ -50,17 +50,18 @@ public class RainSunnyTest {
                 });
         System.out.println(stringBuffer);
 
+        result.entrySet()
+                .forEach(floatIntegerEntry -> {
+                    System.out.println(floatIntegerEntry.getKey() + ": " + (floatIntegerEntry.getValue() / (iterations + 0D)));
+                });
+
         BiFunction<Double, Double, Boolean> epsilonEqual = (Double first, Double second) -> {
-            return Math.abs((first - second)) < 0.001;
+            return Math.abs((first - second)) < 0.01;
         };
         Assert.assertFalse(epsilonEqual.apply(0.1D, 0.2D));
         Assert.assertTrue(epsilonEqual.apply(0.1D, 0.1D));
 
         Assert.assertTrue(epsilonEqual.apply(result.get("R") / (iterations + 0D), 0.5D));
         Assert.assertTrue(epsilonEqual.apply(result.get("S") / (iterations + 0D), 0.5D));
-        result.entrySet()
-                .forEach(floatIntegerEntry -> {
-                    System.out.println(floatIntegerEntry.getKey() + ": " + (floatIntegerEntry.getValue() / (iterations + 0D)));
-                });
     }
 }

@@ -1,4 +1,4 @@
-package ro.anud.anud;
+package ro.anud.markovchain;
 
 public class AnudApplication {
 
